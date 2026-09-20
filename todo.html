@@ -1,0 +1,610 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>To-Do List</title>
+</head>
+    <body>
+        <div class="title">To-Do List</div>
+        <div class="container">
+            <div class="shade"></div>
+            <input type="text" class="input">
+                <div class="text">
+                <div class="more"><b>+</b></div>
+            </div>
+        </div>
+<div class="hamburger" onclick="toggleMenu()">☰</div>
+
+<div id="sidebar">
+    <h2>Menu</h2>
+
+    <a href="index.html"><button>📅 Orario</button></a>
+    <a href="media.html"><button>📊 Andamento</button></a>
+    <a href="todo.html"><button>📝 To-Do</button></a>
+</div>
+
+<div id="overlay" onclick="toggleMenu()"></div>
+        <style>
+            *{
+                margin:0;
+                padding:0;
+                box-sizing:border-box;
+            }
+
+            body{
+                height:100vh;
+                display:flex;
+                flex-direction:column;
+                align-items:center;
+                background:
+                linear-gradient(rgba(255,255,255,.18),rgba(255,255,255,.18)),
+                url("bg.jpg");
+                background-repeat: no-repeat;
+                background-size:cover;
+                background-position:center;
+                font-family:"Poppins",sans-serif;
+            }
+
+
+            .title{
+                margin-top:35px;
+                font-size:68px;
+                font-family:"Georgia",serif;
+                color:#ff4fa8;
+                letter-spacing:3px;
+                text-shadow:
+                0 0 15px rgba(255,120,200,.5),
+                0 8px 30px rgba(255,170,220,.45);
+            }
+
+            #sidebar {
+                position: fixed;
+                top: 0;
+                left: -260px;
+                width: 220px;
+                height: 100%;
+                background: #222;
+                color: white;
+                padding: 20px;
+                transition: 0.3s;
+                z-index: 999;
+            }
+
+            #sidebar h2 {
+                margin-bottom: 20px;
+            }
+
+            #sidebar button {
+                width: 100%;
+                margin-bottom: 10px;
+                padding: 10px;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                background: #ff4fa8;
+                color: white;
+                font-weight: bold;
+            }
+
+            #sidebar button:hover {
+                background: #ff1f8f;
+            }
+
+            #overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.4);
+                display: none;
+                z-index: 998;
+            }
+
+            /* bottone hamburger */
+            .hamburger {
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                font-size: 35px;
+                cursor: pointer;
+                z-index: 1000;
+                color: #ff4fa8;
+                user-select: none;
+            }
+
+
+            .container{
+                margin-top:30px;
+                width:950px;
+                min-height:700px;
+                padding:30px;
+                position:relative;
+                transform:translateY(-25px);
+                border-radius:35px;
+                background:rgba(255,255,255,.32);
+                border:1.8px solid rgba(255,255,255,.65);
+                backdrop-filter:blur(22px);
+                -webkit-backdrop-filter:blur(22px);
+                box-shadow:
+                0 20px 45px rgba(232,120,210,.30);
+                overflow:hidden;
+
+
+            }
+
+
+            .container::before{
+                content:"";
+                position:absolute;
+                width:220px;
+                height:220px;
+                border-radius:50%;
+                background:#ffd0ee;
+                filter:blur(90px);
+                top:-70px;
+                left:-70px;
+                opacity:.9;
+                z-index:-1;
+            }
+
+
+            .container::after{
+                content:"";
+                position:absolute;
+                width:180px;
+                height:180px;
+                border-radius:50%;
+                background:#ddb4ff;
+                filter:blur(90px);
+                bottom:-60px;
+                right:-50px;
+                opacity:.9;
+                z-index:-1;
+
+
+            }
+
+
+            .riga{
+                display:flex;
+                align-items:center;
+                gap:18px;
+                padding:16px 20px;
+                margin-bottom:16px;
+                border-radius:25px;
+                background:rgba(255,255,255,.55);
+                backdrop-filter:blur(10px);
+                transition:.25s;
+                animation:fade .4s;
+            }
+
+
+            .riga:hover{
+                transform:translateY(-2px);
+                background:rgba(255,255,255,.65);
+            }
+
+
+            .riga.dragging{
+                opacity:.55;
+            }
+
+
+            .casella{
+                width:28px;
+                height:28px;
+                border-radius:10px;
+                border:2px solid #ff78c7;
+                background:white;
+                display:flex;
+                justify-content:center;
+                align-items:center;
+                cursor:pointer;
+                transition:0.2s;
+                box-shadow:
+                inset 0 0 8px rgba(255,180,220,.35);
+            }
+
+
+            .casella:hover{
+                transform:scale(1.12);
+                box-shadow:
+                0 0 12px rgba(255,130,200,.45);
+            }
+
+
+            .casella.checked{
+                background:
+                linear-gradient(135deg,#ff8ed5,#d56cff);
+                border:none;
+            }
+
+
+            .casella.checked::after{
+                content:"❤";
+                color:white;
+                font-size:15px;
+            }
+       
+            .text{
+                font-size:28px;
+                font-weight:600;
+                color:#9d4edd;
+            }
+
+
+            .text.done{
+                text-decoration:line-through;
+                opacity:.45;
+            }
+
+
+            .date{
+                margin-left:15px;
+                color:#d06aa9;
+                font-weight:600;
+                font-size:16px;
+            }
+
+
+            .actions{
+                margin-left:auto;
+                display:flex;
+                gap:12px;
+            }
+
+
+            .actions img{
+                width:46px;
+                height:46px;
+                padding:9px;
+                border-radius:50%;
+                background:white;
+                box-shadow:
+                0 5px 15px rgba(255,140,210,.25);
+                transition:.25s;
+            }
+
+
+            .actions img:hover{
+                transform:scale(1.15) rotate(8deg);
+                background:#ffe9f7;
+            }
+
+
+            .input{
+                position:absolute;
+                bottom:35px;
+                left:30px;
+                width:68%;
+                display:none;
+                padding:15px 18px;
+                border:none;
+                outline:none;
+                border-radius:16px;
+                background:white;
+                color:#9d4edd;
+                font-size:18px;
+                box-shadow:
+                0 8px 20px rgba(255,150,210,.25);
+            }
+
+
+            .input::placeholder{
+                color:#d5a3d8;
+            }
+
+            .more{
+                position:absolute;
+                right:28px;
+                bottom:28px;
+                width:78px;
+                height:78px;
+                border-radius:50%;
+                background:
+                linear-gradient(135deg,#ff8fd7,#d56cff);
+                color:white;
+                font-size:45px;
+                display:flex;
+                justify-content:center;
+                align-items:center;
+                cursor:pointer;
+                box-shadow:
+                0 12px 28px rgba(255,120,200,.45);
+                transition: transform 0.35s ease;
+            }
+
+            .more:hover{
+                transform:scale(1.05) rotate(90deg);
+                box-shadow: 0 18px 35px rgba(255,120,200,.55);
+            }
+
+            @keyframes float{
+            0%{
+            transform:translateY(0);
+            }
+            50%{
+            transform:translateY(-6px);
+            }
+            100%{
+            transform:translateY(0);
+            }
+            }
+
+            @keyframes fade{
+            from{
+            opacity:0;
+            transform:translateY(15px);
+            }
+            to{
+            opacity:1;
+            transform:translateY(0);
+            }
+            }
+            </style>
+
+            <script>
+                
+const more = document.querySelector(".more");
+const input = document.querySelector(".input");
+const container = document.querySelector(".container");
+
+
+let notes = [];
+
+
+// LOAD
+window.addEventListener("load", () => {
+    const saved = JSON.parse(localStorage.getItem("notes")) || [];
+    notes = saved;
+    render();
+});
+
+
+// SAVE
+function save() {
+    localStorage.setItem("notes", JSON.stringify(notes));
+}
+
+
+// RENDER
+function render() {
+    document.querySelectorAll(".riga").forEach(el => el.remove());
+
+
+function formatDate(dateStr) {
+    if (!dateStr) return "";
+    const [year, month, day] = dateStr.split("-");
+    return `${day}/${month}/${year}`;
+}
+
+
+    notes.forEach((note, index) => {
+        const riga = document.createElement("div");
+        riga.classList.add("riga");
+        riga.setAttribute("draggable", "true");
+
+
+        const casella = document.createElement("div");
+        casella.classList.add("casella");
+        if (note.done) casella.classList.add("checked");
+
+
+        const text = document.createElement("div");
+        text.classList.add("text");
+        text.innerText = note.text;
+        text.contentEditable = false;
+
+
+        if (note.done) text.classList.add("done");
+
+
+        // Doppio click per modificare
+        text.addEventListener("dblclick", () => {
+            text.contentEditable = true;
+            text.focus();
+
+
+            // porta il cursore alla fine
+            const range = document.createRange();
+            range.selectNodeContents(text);
+            range.collapse(false);
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+        });
+
+
+        // Salva quando esce dal campo
+        text.addEventListener("blur", () => {
+            text.contentEditable = false;
+
+
+            const nuovoTesto = text.innerText.trim();
+
+
+            if (nuovoTesto === "") {
+                notes.splice(index, 1); // elimina la nota se è vuota
+            } else {
+                notes[index].text = nuovoTesto;
+            }
+
+
+            save();
+            render();
+        });
+
+
+        // Salva anche premendo Invio
+        text.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                text.blur();
+            }
+        });
+
+
+        const date = document.createElement("div");
+        date.classList.add("date");
+        date.innerText = note.date ? "♡ date: " + formatDate(note.date) : "";
+
+
+        const actions = document.createElement("div");
+        actions.classList.add("actions");
+
+
+        const calendar = document.createElement("img");
+        calendar.src = "calendar.jpg";
+        calendar.classList.add("calendar-icon");
+
+
+        const dateInput = document.createElement("input");
+        dateInput.type = "date";
+        dateInput.style.display = "none";
+        dateInput.value = note.date || "";
+
+
+        dateInput.addEventListener("change", () => {
+            notes[index].date = dateInput.value;
+            save();
+            render();
+        });
+
+
+        calendar.addEventListener("click", () => {
+            dateInput.showPicker(); // apre il calendario vero
+        });
+
+
+        document.body.appendChild(dateInput);
+
+
+        actions.appendChild(calendar);
+        actions.appendChild(dateInput);
+
+
+        const trash = document.createElement("img");
+        trash.src = "trash.webp";
+
+
+        trash.addEventListener("click", () => {
+            notes.splice(index, 1);
+            save();
+            render();
+        });
+
+
+        actions.appendChild(trash);
+
+
+        casella.addEventListener("click", () => {
+            notes[index].done = !notes[index].done;
+            save();
+            render();
+        });
+
+
+        riga.appendChild(casella);
+        riga.appendChild(text);
+        riga.appendChild(date);
+        riga.appendChild(actions);
+
+
+        container.appendChild(riga);
+
+
+        enableDrag(riga, index);
+    });
+}
+
+
+more.addEventListener("click", () => {
+    input.style.display = "block";
+    input.focus();
+});
+
+
+input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+        const testo = input.value.trim();
+        if (!testo) return;
+
+
+        notes.push({
+            text: testo,
+            done: false,
+            date: ""
+        });
+
+
+        save();
+        render();
+
+
+        input.value = "";
+        input.style.display = "none";
+    }
+});
+
+
+function enableDrag(item, index) {
+    item.addEventListener("dragstart", () => {
+        item.classList.add("dragging");
+    });
+
+
+    item.addEventListener("dragend", () => {
+        item.classList.remove("dragging");
+    });
+}
+
+
+container.addEventListener("dragover", (e) => {
+    e.preventDefault();
+
+
+    const dragging = document.querySelector(".dragging");
+    const afterElement = getDragAfterElement(container, e.clientY);
+
+
+    if (afterElement == null) {
+        container.appendChild(dragging);
+    } else {
+        container.insertBefore(dragging, afterElement);
+    }
+});
+
+
+function getDragAfterElement(container, y) {
+    const elements = [...container.querySelectorAll(".riga:not(.dragging)")];
+
+
+    return elements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+
+
+        if (offset < 0 && offset > closest.offset) {
+            return { offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+function toggleMenu() {
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
+
+    if (sidebar.style.left === "0px") {
+        sidebar.style.left = "-260px";
+        overlay.style.display = "none";
+    } else {
+        sidebar.style.left = "0px";
+        overlay.style.display = "block";
+    }
+}
+</script>
+
+    </body>
+</html>

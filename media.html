@@ -1,0 +1,249 @@
+<html>
+<head>
+<title>ANDAMENTO ANNUALE</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+    margin: 0;
+    background: pink;
+    font-family: Arial;
+}
+
+/* SIDEBAR */
+#sidebar {
+    position: fixed;
+    top: 0;
+    left: -250px;
+    width: 220px;
+    height: 100%;
+    background: #222;
+    color: white;
+    padding: 20px;
+    transition: 0.3s;
+    z-index: 999;
+}
+
+#sidebar button {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background: #ff4da6;
+    color: white;
+    font-weight: bold;
+}
+
+#sidebar button:hover {
+    background: #ff1f8f;
+}
+
+/* overlay */
+#overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.4);
+    display: none;
+    z-index: 998;
+}
+
+/* container */
+.container {
+    background: white;
+    width: 80%;
+    margin: 10px auto;
+    height: 700px;
+    border-radius: 60px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    text-align: center;
+    padding-top: 20px;
+}
+
+/* grafico */
+#grafico-wrapper {
+    width: 90%;
+    height: 500px;
+    margin: auto;
+}
+
+/* bottone + */
+.more {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: rgb(255,33,237);
+    color: rgb(94,0,89);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 50px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: 95%;
+}
+
+#mediaTotale {
+    font-size: 18px;
+    margin-top: 5px;
+    color: #444;
+    font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+    <h2>Menu</h2>
+    <button onclick="aggiungiVoto()">➕ Aggiungi voto</button>
+    <button onclick="reset()">🗑️ Reset</button>
+
+    <a href="index.html"><button>📅 Orario</button></a>
+    <a href="media.html"><button>📊 Andamento</button></a>
+    <a href="todo.html"><button>📝 To-Do</button></a>
+</div>
+
+<div id="overlay" onclick="toggleMenu()"></div>
+
+<!-- CONTENUTO -->
+<div class="container">
+
+    <h1 style="margin-bottom:5px;">ANDAMENTO 2026-2027</h1>
+<div id="mediaTotale">Media: --</div>
+
+    <div id="grafico-wrapper">
+        <canvas id="grafico"></canvas>
+    </div>
+
+    <div class="more" onclick="toggleMenu()">+</div>
+
+</div>
+
+<script>
+let voti = JSON.parse(localStorage.getItem("voti")) || [];
+
+const mesi = [
+    "Set", "Ott", "Nov", "Dic",
+    "Gen", "Feb", "Mar", "Apr",
+    "Mag", "Giu"
+];
+
+let ctx = document.getElementById("grafico").getContext("2d");
+
+let chart = new Chart(ctx, {
+    type: "line",
+    data: {
+        labels: mesi,
+        datasets: [{
+            label: "Media voti",
+            data: voti,
+            borderColor: "rgb(255, 33, 237)",
+            backgroundColor: "rgba(255, 33, 237, 0.2)",
+            tension: 0.3,
+            pointRadius: 5
+        }]
+    },
+    options: {
+        scales: {
+            y: {
+                min: 0,
+                max: 10
+            }
+        }
+    }
+});
+
+function aggiungiVoto(){
+
+    let voto = prompt("Inserisci voto (es. 8.55)");
+
+    if(voto === null) return;
+
+    voto = parseFloat(voto);
+
+    if(isNaN(voto) || voto < 0 || voto > 10){
+        alert("Voto non valido!");
+        return;
+    }
+
+    voti.push(voto);
+
+    if(voti.length > 10){
+        voti.shift();
+    }
+
+    localStorage.setItem("voti", JSON.stringify(voti));
+
+    chart.data.datasets[0].data = voti;
+    chart.update();
+
+    aggiornaMedia();
+}
+
+function reset(){
+    localStorage.removeItem("voti");
+    location.reload();
+}
+
+/* SIDEBAR TOGGLE */
+function toggleMenu(){
+    let sidebar = document.getElementById("sidebar");
+    let overlay = document.getElementById("overlay");
+
+    if(sidebar.style.left === "0px"){
+        sidebar.style.left = "-250px";
+        overlay.style.display = "none";
+    } else {
+        sidebar.style.left = "0px";
+        overlay.style.display = "block";
+    }
+}
+
+function aggiungiMedia(){
+
+    let voto = prompt("Inserisci voto (es. 8.55)");
+
+    if(voto === null) return;
+
+    voto = parseFloat(voto);
+
+    if(isNaN(voto) || voto < 0 || voto > 10){
+        alert("Voto non valido!");
+        return;
+    }
+
+    voti.push(voto);
+
+    if(voti.length > 10){
+        voti.shift(); // mantiene max 10 valori
+    }
+
+    localStorage.setItem("voti", JSON.stringify(voti));
+
+    chart.data.datasets[0].data = voti;
+    chart.update();
+}
+
+function aggiornaMedia() {
+    if (voti.length === 0) {
+        document.getElementById("mediaTotale").innerText = "Media: --";
+        return;
+    }
+
+    let somma = voti.reduce((a, b) => a + b, 0);
+    let media = somma / voti.length;
+
+    document.getElementById("mediaTotale").innerText =
+        "Media: " + media.toFixed(2);
+}
+</script>
+
+</body>
+</html>

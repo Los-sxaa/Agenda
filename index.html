@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PLANNER</title>
+
+    <style>
+        body {
+            margin: 0;
+            background-color: pink;
+            font-family: Arial;
+        }
+
+        /* SIDEBAR */
+        #sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 220px;
+            height: 100%;
+            background: #222;
+            color: white;
+            padding: 20px;
+            transition: 0.3s;
+            z-index: 999;
+        }
+
+        #sidebar h2 {
+            margin-bottom: 20px;
+        }
+
+        #sidebar button {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #ff4da6;
+            color: white;
+            font-weight: bold;
+        }
+
+        #sidebar button:hover {
+            background: #ff1f8f;
+        }
+
+        /* overlay */
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.4);
+            display: none;
+            z-index: 998;
+        }
+
+        .container {
+            background: linear-gradient(145deg, #ffffff, #ffe6f0);
+            width: 80%;
+            margin: 10px auto;
+            min-height: 700px;
+            text-align: center;
+            color: rgb(252, 108, 132);
+            font-size: 50px;
+            font-weight: bold;
+            border-radius: 60px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding-bottom: 30px;
+        }
+
+        #contenitoreMaterie {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px;
+        }
+
+        .giorno {
+            width: 15%;
+            min-height: 400px;
+            background-color: #ffeef4;
+            border: 2px solid rgb(252,108,132);
+            border-radius: 15px;
+            padding: 8px;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .giorno h3 {
+            margin: 5px 0 10px;
+            font-size: 22px;
+            color: rgb(252,108,132);
+        }
+
+        .materie {
+            width: 95%;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        /* COLORS */
+        .matematica { background: rgb(255, 39, 39); }
+        .letteratura { background: rgb(38, 201, 255); }
+        .inglese { background: rgb(255, 175, 28); }
+        .storia { background: rgb(31, 255, 31); }
+        .francese { background: rgb(255, 31, 255); }
+        .diritto { background: rgb(255, 255, 0); }
+        .economia { background: rgb(153, 0, 255); }
+        .politica { background: rgb(49, 49, 255); }
+        .edfisica { background: rgb(151, 151, 151); }
+        .irc { background: rgb(247,89,115); }
+
+        .more {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background-color: rgb(255, 33, 237);
+            color: rgb(94, 0, 89);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 95%;
+            margin-top: 10%;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+
+    <h2>Menu</h2>
+
+    <button onclick="aggiungiMateria()">
+        ➕ Aggiungi materia
+    </button>
+
+    <button onclick="modificaMateria()">
+        ✏️ Modifica materia
+    </button>
+
+    <button onclick="eliminaMateria()">
+        🗑️ Elimina materia
+    </button>
+
+    <button onclick="resetOrario()">
+        🧹 Reset
+    </button>
+
+    <a href="index.html">
+        <button>📅 Orario</button>
+    </a>
+
+    <a href="media.html">
+        <button>📊 Andamento</button>
+    </a>
+
+    <a href="todo.html">
+        <button>📝 To-Do</button>
+    </a>
+
+</div>
+
+<div id="overlay" onclick="toggleMenu()"></div>
+
+<div class="container">
+
+    <p>ORARIO SETTIMANALE</p>
+
+    <div id="contenitoreMaterie">
+
+        <div class="giorno" id="giorno1">
+            <h3>Lunedì</h3>
+        </div>
+
+        <div class="giorno" id="giorno2">
+            <h3>Martedì</h3>
+        </div>
+
+        <div class="giorno" id="giorno3">
+            <h3>Mercoledì</h3>
+        </div>
+
+        <div class="giorno" id="giorno4">
+            <h3>Giovedì</h3>
+        </div>
+
+        <div class="giorno" id="giorno5">
+            <h3>Venerdì</h3>
+        </div>
+
+        <div class="giorno" id="giorno6">
+            <h3>Sabato</h3>
+        </div>
+
+    </div>
+
+    <div class="more" onclick="toggleMenu()">+</div>
+
+</div>
+
+
+<script>
+
+let orario = JSON.parse(localStorage.getItem("orario")) || [];
+
+
+/* =========================
+   MATERIE DISPONIBILI
+========================= */
+
+const materie = [
+    {nome:"Matematica", classe:"matematica"},
+    {nome:"Letteratura", classe:"letteratura"},
+    {nome:"Inglese", classe:"inglese"},
+    {nome:"Storia", classe:"storia"},
+    {nome:"Francese", classe:"francese"},
+    {nome:"Diritto", classe:"diritto"},
+    {nome:"Economia", classe:"economia"},
+    {nome:"Politica", classe:"politica"},
+    {nome:"Ed. Fisica", classe:"edfisica"},
+    {nome:"IRC", classe:"irc"}
+];
+
+
+/* =========================
+   MENU
+========================= */
+
+function toggleMenu(){
+
+    let sidebar = document.getElementById("sidebar");
+    let overlay = document.getElementById("overlay");
+
+    if(sidebar.style.left === "0px"){
+
+        sidebar.style.left = "-250px";
+        overlay.style.display = "none";
+
+    } else {
+
+        sidebar.style.left = "0px";
+        overlay.style.display = "block";
+
+    }
+}
+
+
+/* =========================
+   SALVATAGGIO
+========================= */
+
+function salvaOrario(){
+
+    localStorage.setItem(
+        "orario",
+        JSON.stringify(orario)
+    );
+
+}
+
+
+/* =========================
+   MOSTRA L'ORARIO
+========================= */
+
+function mostraOrario(){
+
+    // Svuota i giorni
+    for(let i = 1; i <= 6; i++){
+
+        let giorno = document.getElementById("giorno" + i);
+
+        // Mantiene solo il titolo h3
+        while(giorno.children.length > 1){
+            giorno.removeChild(giorno.lastChild);
+        }
+    }
+
+
+    // Ricrea tutte le materie
+    orario.forEach(materia => {
+
+        let box = document.createElement("div");
+
+        box.className =
+            "materie " + materia.classe;
+
+        box.textContent = materia.nome;
+
+        document
+            .getElementById("giorno" + materia.giorno)
+            .appendChild(box);
+
+    });
+
+}
+
+
+/* =========================
+   SCEGLI MATERIA
+========================= */
+
+function scegliMateria(){
+
+    let testo = "Scegli una materia:\n\n";
+
+    for(let i = 0; i < materie.length; i++){
+
+        testo +=
+            (i + 1) +
+            ". " +
+            materie[i].nome +
+            "\n";
+
+    }
+
+    let scelta = prompt(testo);
+
+    if(scelta === null)
+        return null;
+
+    scelta = parseInt(scelta);
+
+    if(
+        isNaN(scelta) ||
+        scelta < 1 ||
+        scelta > materie.length
+    ){
+
+        alert("Scelta non valida.");
+        return null;
+
+    }
+
+    return materie[scelta - 1];
+
+}
+
+
+/* =========================
+   SCEGLI GIORNO
+========================= */
+
+function scegliGiorno(){
+
+    let giorno = prompt(
+        "Giorno?\n\n" +
+        "1. Lunedì\n" +
+        "2. Martedì\n" +
+        "3. Mercoledì\n" +
+        "4. Giovedì\n" +
+        "5. Venerdì\n" +
+        "6. Sabato"
+    );
+
+    if(giorno === null)
+        return null;
+
+    giorno = parseInt(giorno);
+
+    if(
+        isNaN(giorno) ||
+        giorno < 1 ||
+        giorno > 6
+    ){
+
+        alert("Giorno non valido.");
+        return null;
+
+    }
+
+    return giorno;
+
+}
+
+
+/* =========================
+   AGGIUNGI MATERIA
+========================= */
+
+function aggiungiMateria(){
+
+    let materia = scegliMateria();
+
+    if(materia === null)
+        return;
+
+
+    let giorno = scegliGiorno();
+
+    if(giorno === null)
+        return;
+
+
+    orario.push({
+
+        nome: materia.nome,
+        classe: materia.classe,
+        giorno: giorno
+
+    });
+
+
+    salvaOrario();
+
+    mostraOrario();
+
+}
+
+
+/* =========================
+   MODIFICA MATERIA
+========================= */
+
+function modificaMateria(){
+
+    if(orario.length === 0){
+
+        alert("Non ci sono materie da modificare.");
+        return;
+
+    }
+
+
+    let giorno = scegliGiorno();
+
+    if(giorno === null)
+        return;
+
+
+    // Prendiamo SOLO le materie di quel giorno
+    let materieGiorno = orario.filter(
+        materia => materia.giorno === giorno
+    );
+
+
+    if(materieGiorno.length === 0){
+
+        alert(
+            "Non ci sono materie inserite in questo giorno."
+        );
+
+        return;
+
+    }
+
+
+    let testo =
+        "Quale materia vuoi modificare?\n\n";
+
+
+    materieGiorno.forEach((materia, index) => {
+
+        testo +=
+            (index + 1) +
+            ". " +
+            materia.nome +
+            "\n";
+
+    });
+
+
+    let scelta = prompt(testo);
+
+    if(scelta === null)
+        return;
+
+    scelta = parseInt(scelta);
+
+
+    if(
+        isNaN(scelta) ||
+        scelta < 1 ||
+        scelta > materieGiorno.length
+    ){
+
+        alert("Numero non valido.");
+        return;
+
+    }
+
+
+    /*
+        Troviamo la materia precisa dentro
+        l'array principale.
+
+        Questo è importante perché la posizione
+        della materia rimane la stessa.
+    */
+
+    let materiaDaModificare =
+        materieGiorno[scelta - 1];
+
+
+    let indice =
+        orario.indexOf(materiaDaModificare);
+
+
+    let nuovaMateria = scegliMateria();
+
+    if(nuovaMateria === null)
+        return;
+
+
+    // Cambiamo SOLO materia
+    orario[indice].nome =
+        nuovaMateria.nome;
+
+    orario[indice].classe =
+        nuovaMateria.classe;
+
+
+    // Il giorno NON viene modificato.
+
+
+    salvaOrario();
+
+    mostraOrario();
+
+}
+
+
+/* =========================
+   ELIMINA MATERIA
+========================= */
+
+function eliminaMateria(){
+
+    if(orario.length === 0){
+
+        alert("Non ci sono materie da eliminare.");
+        return;
+
+    }
+
+
+    let giorno = scegliGiorno();
+
+    if(giorno === null)
+        return;
+
+
+    let materieGiorno = orario.filter(
+        materia => materia.giorno === giorno
+    );
+
+
+    if(materieGiorno.length === 0){
+
+        alert(
+            "Non ci sono materie inserite in questo giorno."
+        );
+
+        return;
+
+    }
+
+
+    let testo =
+        "Quale materia vuoi eliminare?\n\n";
+
+
+    materieGiorno.forEach((materia, index) => {
+
+        testo +=
+            (index + 1) +
+            ". " +
+            materia.nome +
+            "\n";
+
+    });
+
+
+    let scelta = prompt(testo);
+
+    if(scelta === null)
+        return;
+
+    scelta = parseInt(scelta);
+
+
+    if(
+        isNaN(scelta) ||
+        scelta < 1 ||
+        scelta > materieGiorno.length
+    ){
+
+        alert("Numero non valido.");
+        return;
+
+    }
+
+
+    let materiaDaEliminare =
+        materieGiorno[scelta - 1];
+
+
+    let indice =
+        orario.indexOf(materiaDaEliminare);
+
+
+    /*
+        Eliminiamo la materia.
+
+        Le altre vengono automaticamente
+        spostate verso l'alto perché l'array
+        viene ricompattato.
+    */
+
+    orario.splice(indice, 1);
+
+
+    salvaOrario();
+
+    mostraOrario();
+
+}
+
+
+/* =========================
+   RESET
+========================= */
+
+function resetOrario(){
+
+    let conferma = confirm(
+        "Sei sicuro di voler cancellare tutto l'orario?"
+    );
+
+    if(!conferma)
+        return;
+
+
+    localStorage.removeItem("orario");
+
+    orario = [];
+
+    mostraOrario();
+
+}
+
+
+/* =========================
+   CARICAMENTO INIZIALE
+========================= */
+
+mostraOrario();
+
+</script>
+
+</body>
+</html>
